@@ -1,0 +1,51 @@
+<div class="auth-container">
+  <div class="auth-card glass-panel">
+    <div class="auth-header">
+      <div class="logo-badge">TV</div>
+      <h2>Welcome Back</h2>
+      <p class="subtitle">Log in to your TicketVerse account</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="credentials.email" 
+          placeholder="name@example.com" 
+          required 
+          class="form-control"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="credentials.password" 
+          placeholder="••••••••" 
+          required 
+          class="form-control"
+        />
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn btn-primary btn-full">
+        <span *ngIf="!loading">Sign In</span>
+        <span *ngIf="loading">Authenticating...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/register" class="link">Create account</a></p>
+      <p><a routerLink="/" class="link-muted">&larr; Back to Dashboard</a></p>
+    </div>
+  </div>
+</div>

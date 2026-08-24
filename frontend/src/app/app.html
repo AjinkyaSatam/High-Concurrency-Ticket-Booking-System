@@ -2,24 +2,37 @@
   <!-- Navbar -->
   <header class="navbar glass-panel">
     <div class="brand">
-      <div class="logo-badge">TV</div>
-      <span class="brand-name">Ticket<span class="gradient-text">Verse</span></span>
+      <a routerLink="/" class="brand-link">
+        <div class="logo-badge">TV</div>
+        <span class="brand-name">Ticket<span class="gradient-text">Verse</span></span>
+      </a>
       <span class="system-badge">MODULAR MONOLITH</span>
     </div>
     <nav class="nav-links">
-      <a href="#architecture" class="nav-link active">Architecture</a>
+      <a routerLink="/" class="nav-link active">Architecture</a>
       <a href="#services" class="nav-link">Services</a>
       <a href="#roadmap" class="nav-link">Roadmap</a>
     </nav>
     <div class="header-actions">
-      <div class="status-indicator">
-        <span class="pulse-dot"></span>
-        <span>Phase 1 Active</span>
-      </div>
+      <ng-container *ngIf="authService.currentUser() as user; else unauth">
+        <div class="user-pill">
+          <span class="user-name">{{ user.fullName }}</span>
+          <span class="role-badge">{{ user.roles[0] || 'ROLE_USER' }}</span>
+          <button (click)="logout()" class="btn-logout">Logout</button>
+        </div>
+      </ng-container>
+      <ng-template #unauth>
+        <div class="auth-buttons">
+          <a routerLink="/login" class="btn btn-secondary">Sign In</a>
+          <a routerLink="/register" class="btn btn-primary">Get Started</a>
+        </div>
+      </ng-template>
     </div>
   </header>
 
-  <!-- Hero Section -->
+  <router-outlet></router-outlet>
+
+  <!-- Dashboard Overview Content -->
   <main class="main-content">
     <section class="hero-section glass-panel">
       <div class="hero-badge">⚡ Ultra-High Concurrency Engine</div>
@@ -28,21 +41,21 @@
         <span class="gradient-text">Sub-Millisecond Reservations.</span>
       </h1>
       <p class="hero-subtitle">
-        High-scale ticket booking platform built with Spring Boot 3.3, Java 21, PostgreSQL, Redis, and Angular 18. Engineered for peak throughput and transactional integrity.
+        High-scale ticket booking platform built with Spring Boot 3.3, Java 21, PostgreSQL, Redis, and Angular 18. Phase 2 JWT Authentication and Security filters active.
       </p>
 
       <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-value">JWT + BCrypt</div>
+          <div class="stat-label">Stateless Security</div>
+        </div>
         <div class="stat-card">
           <div class="stat-value">100%</div>
           <div class="stat-label">ACID Guaranteed</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">0ms</div>
-          <div class="stat-label">Overbooking Tolerance</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">v1.0</div>
-          <div class="stat-label">System Version</div>
+          <div class="stat-value">Phase 2</div>
+          <div class="stat-label">System Milestone</div>
         </div>
       </div>
     </section>
@@ -70,12 +83,13 @@
     <section id="roadmap" class="roadmap-section glass-panel">
       <h2 class="section-title">Development Execution Roadmap</h2>
       <div class="roadmap-grid">
-        <div *ngFor="let phase of roadmapPhases" class="roadmap-card" [class.active-phase]="phase.active">
+        <div *ngFor="let phase of roadmapPhases" class="roadmap-card" [class.active-phase]="phase.active" [class.completed-phase]="phase.status === 'COMPLETED'">
           <div class="phase-number">Phase {{ phase.num }}</div>
           <div class="phase-name">{{ phase.name }}</div>
           <div class="phase-status">
-            <span *ngIf="phase.active" class="status-tag tag-active">Processing...</span>
-            <span *ngIf="!phase.active" class="status-tag tag-upcoming">Planned</span>
+            <span *ngIf="phase.status === 'COMPLETED'" class="status-tag tag-completed">✓ Done</span>
+            <span *ngIf="phase.status === 'IN_PROGRESS'" class="status-tag tag-active">Processing...</span>
+            <span *ngIf="phase.status === 'UPCOMING'" class="status-tag tag-upcoming">Planned</span>
           </div>
         </div>
       </div>
@@ -83,8 +97,6 @@
   </main>
 
   <footer class="footer">
-    <p>High-Concurrency Ticket Booking System &bull; Phase 1 Platform Baseline</p>
+    <p>High-Concurrency Ticket Booking System &bull; Phase 2 JWT Authentication Engine</p>
   </footer>
 </div>
-
-<router-outlet></router-outlet>

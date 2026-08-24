@@ -19,6 +19,14 @@
   gap: 12px;
 }
 
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
 .logo-badge {
   width: 40px;
   height: 40px;
@@ -49,6 +57,60 @@
   border: 1px solid rgba(99, 102, 241, 0.3);
   margin-left: 8px;
 }
+
+.auth-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.role-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.btn-logout {
+  background: none;
+  border: none;
+  color: #fca5a5;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  margin-left: 4px;
+}
+
+.btn-logout:hover {
+  text-decoration: underline;
+}
+
+.completed-phase {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.tag-completed {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--accent-emerald);
+}
+
 
 .nav-links {
   display: flex;
