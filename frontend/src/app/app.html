@@ -1,0 +1,90 @@
+<div class="layout-wrapper">
+  <!-- Navbar -->
+  <header class="navbar glass-panel">
+    <div class="brand">
+      <div class="logo-badge">TV</div>
+      <span class="brand-name">Ticket<span class="gradient-text">Verse</span></span>
+      <span class="system-badge">MODULAR MONOLITH</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#architecture" class="nav-link active">Architecture</a>
+      <a href="#services" class="nav-link">Services</a>
+      <a href="#roadmap" class="nav-link">Roadmap</a>
+    </nav>
+    <div class="header-actions">
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span>Phase 1 Active</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="main-content">
+    <section class="hero-section glass-panel">
+      <div class="hero-badge">⚡ Ultra-High Concurrency Engine</div>
+      <h1 class="hero-title">
+        Zero Double-Bookings.<br>
+        <span class="gradient-text">Sub-Millisecond Reservations.</span>
+      </h1>
+      <p class="hero-subtitle">
+        High-scale ticket booking platform built with Spring Boot 3.3, Java 21, PostgreSQL, Redis, and Angular 18. Engineered for peak throughput and transactional integrity.
+      </p>
+
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-value">100%</div>
+          <div class="stat-label">ACID Guaranteed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">0ms</div>
+          <div class="stat-label">Overbooking Tolerance</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">v1.0</div>
+          <div class="stat-label">System Version</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Grid -->
+    <section id="services" class="services-section">
+      <h2 class="section-title">System Micro-Architecture</h2>
+      <div class="services-grid">
+        <div *ngFor="let service of systemServices" class="service-card glass-panel">
+          <div class="service-header">
+            <span class="service-title">{{ service.name }}</span>
+            <span class="badge" [class.badge-active]="service.status === 'ACTIVE' || service.status === 'READY'">
+              {{ service.status }}
+            </span>
+          </div>
+          <p class="service-type">{{ service.type }}</p>
+          <div class="service-footer">
+            <span class="port-tag">Port: {{ service.port }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Development Roadmap -->
+    <section id="roadmap" class="roadmap-section glass-panel">
+      <h2 class="section-title">Development Execution Roadmap</h2>
+      <div class="roadmap-grid">
+        <div *ngFor="let phase of roadmapPhases" class="roadmap-card" [class.active-phase]="phase.active">
+          <div class="phase-number">Phase {{ phase.num }}</div>
+          <div class="phase-name">{{ phase.name }}</div>
+          <div class="phase-status">
+            <span *ngIf="phase.active" class="status-tag tag-active">Processing...</span>
+            <span *ngIf="!phase.active" class="status-tag tag-upcoming">Planned</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>High-Concurrency Ticket Booking System &bull; Phase 1 Platform Baseline</p>
+  </footer>
+</div>
+
+<router-outlet></router-outlet>
