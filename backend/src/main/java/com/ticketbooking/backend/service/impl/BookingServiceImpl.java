@@ -6,6 +6,7 @@ import com.ticketbooking.backend.dto.TicketResponse;
 import com.ticketbooking.backend.entity.*;
 import com.ticketbooking.backend.repository.*;
 import com.ticketbooking.backend.service.BookingService;
+import com.ticketbooking.backend.service.DistributedLockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +27,16 @@ public class BookingServiceImpl implements BookingService {
     private final SeatRepository seatRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final DistributedLockService distributedLockService;
 
     @Override
-    @Transactional
     public BookingResponse createBooking(String userEmail, BookingRequest request) {
+        // Acquire Redis distributed multi-lock across all requested seats first (prevents cross-node race conditions)
+        return distributedLockService.executeWithSeatLocks(request.getSeatIds(), 5, 10, () -> processBookingTransaction(userEmail, request));
+    }
+
+    @Transactional
+    public BookingResponse processBookingTransaction(String userEmail, BookingRequest request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
@@ -40,7 +47,8 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Cannot book tickets for event status: " + event.getStatus());
         }
 
-        List<Seat> seats = seatRepository.findByEventIdAndIdIn(request.getEventId(), request.getSeatIds());
+        // Use pessimistic write lock at database level as secondary safeguard
+        List<Seat> seats = seatRepository.findByEventIdAndIdInWithLock(request.getEventId(), request.getSeatIds());
         if (seats.size() != request.getSeatIds().size()) {
             throw new IllegalArgumentException("One or more selected seats do not exist for this event");
         }
