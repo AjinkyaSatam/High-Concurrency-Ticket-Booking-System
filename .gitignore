@@ -9,9 +9,10 @@
 **/.angular/
 frontend/.vscode/
 
-# IDE / OS
+# IDE / OS / Agents
 .idea/
 *.iml
 .vscode/
 .DS_Store
 Thumbs.db
+.agents/
