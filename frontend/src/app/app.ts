@@ -16,10 +16,10 @@ export class AppComponent {
   constructor(public authService: AuthService) {}
   
   systemServices = [
-    { name: 'Spring Boot 3.3 Backend', port: 8080, status: 'READY', type: 'REST API & Venue/Event Engine' },
-    { name: 'PostgreSQL 16 Database', port: 5432, status: 'CONFIGURED', type: 'Relational DB & Venues/Events' },
-    { name: 'Redis 7 In-Memory Cache', port: 6379, status: 'CONFIGURED', type: 'TTL Holds & Distributed Lock' },
-    { name: 'Angular 18 Frontend', port: 4200, status: 'ACTIVE', type: 'Client App & Event Browser' }
+    { name: 'Spring Boot 3.3 Backend', port: 8080, status: 'READY', type: 'REST API & Distributed Lock Engine' },
+    { name: 'PostgreSQL 16 Database', port: 5432, status: 'CONFIGURED', type: 'Relational DB & Transactional Ledger' },
+    { name: 'Redis 7 In-Memory Cache', port: 6379, status: 'CONFIGURED', type: 'TTL Holds & Distributed Multi-Lock' },
+    { name: 'Angular 18 Frontend', port: 4200, status: 'ACTIVE', type: 'Client App & 2D Seat Map' }
   ];
 
   roadmapPhases = [
@@ -28,9 +28,11 @@ export class AppComponent {
     { num: 3, name: 'Venue & Event Management', status: 'COMPLETED', active: false },
     { num: 4, name: 'Seat Map Grid & Generation', status: 'COMPLETED', active: false },
     { num: 5, name: 'Basic Booking Engine', status: 'COMPLETED', active: false },
-    { num: 6, name: 'High Concurrency & Locks', status: 'COMPLETED', active: true },
-    { num: 7, name: 'Temporary Seat Holds', status: 'UPCOMING', active: false },
-    { num: 8, name: 'Idempotent Payment Gateway', status: 'UPCOMING', active: false }
+    { num: 6, name: 'High Concurrency & Locks', status: 'COMPLETED', active: false },
+    { num: 7, name: 'Temporary Seat Holds', status: 'COMPLETED', active: false },
+    { num: 8, name: 'Idempotent Payment Gateway', status: 'COMPLETED', active: false },
+    { num: 9, name: 'Real-time WebSockets', status: 'COMPLETED', active: false },
+    { num: 10, name: 'Rate Limiting & Readiness', status: 'COMPLETED', active: true }
   ];
 
   logout(): void {

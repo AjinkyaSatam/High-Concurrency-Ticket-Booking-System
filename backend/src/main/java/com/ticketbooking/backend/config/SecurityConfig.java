@@ -2,6 +2,7 @@ package com.ticketbooking.backend.config;
 
 import com.ticketbooking.backend.security.CustomUserDetailsService;
 import com.ticketbooking.backend.security.JwtAuthenticationFilter;
+import com.ticketbooking.backend.security.RateLimitingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final RateLimitingFilter rateLimitingFilter;
     private final CustomUserDetailsService userDetailsService;
 
     @Bean
@@ -41,9 +43,10 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/**", "/actuator/**", "/api/v1/health").permitAll()
+                .requestMatchers("/api/v1/auth/**", "/actuator/**", "/api/v1/health", "/ws-seats/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/venues/**", "/api/v1/events/**").permitAll()
                 .anyRequest().authenticated()
             );
