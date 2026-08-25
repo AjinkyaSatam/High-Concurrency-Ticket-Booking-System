@@ -1,0 +1,110 @@
+<div class="events-container">
+  <!-- Hero / Header -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <span class="badge-phase">Phase 3 Active • Live Event Catalog</span>
+      <h1>Discover Live Events & High-Demand Tickets</h1>
+      <p>Browse upcoming concerts, conferences, and stadium shows powered by real-time venue capacity.</p>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (input)="onFilterChange()" 
+        placeholder="Search event name, description..." 
+      />
+    </div>
+
+    <div class="city-box">
+      <input 
+        type="text" 
+        [(ngModel)]="selectedCity" 
+        (input)="onFilterChange()" 
+        placeholder="Filter by city (e.g. London, New York)" 
+      />
+    </div>
+
+    <div class="category-pills">
+      <button 
+        *ngFor="let cat of categories" 
+        class="cat-pill" 
+        [class.active]="(selectedCategory === cat) || (cat === 'All' && !selectedCategory)"
+        (click)="selectCategory(cat)">
+        {{ cat }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="state-card">
+    <div class="spinner"></div>
+    <p>Loading live events from Spring Boot backend...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="state-card error-card">
+    <p>{{ error() }}</p>
+    <button class="btn-retry" (click)="loadEvents()">Retry Loading</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading() && !error() && events().length === 0" class="state-card empty-card">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    </svg>
+    <h3>No Events Found</h3>
+    <p>Try adjusting your search query or category filters.</p>
+  </div>
+
+  <!-- Events Grid -->
+  <div *ngIf="!loading() && !error() && events().length > 0" class="events-grid">
+    <div *ngFor="let event of events()" class="event-card">
+      <div class="card-image-wrap">
+        <img [src]="event.bannerUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80'" [alt]="event.title" />
+        <span class="status-badge" [ngClass]="getStatusClass(event.status)">
+          {{ formatStatus(event.status) }}
+        </span>
+        <span class="category-tag">{{ event.category }}</span>
+      </div>
+
+      <div class="card-body">
+        <h3 class="event-title">{{ event.title }}</h3>
+        
+        <div class="venue-info">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>{{ event.venue.name }}, <strong>{{ event.venue.city }}</strong></span>
+        </div>
+
+        <div class="date-info">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span>{{ event.eventDate | date:'mediumDate' }} • {{ event.eventDate | date:'shortTime' }}</span>
+        </div>
+
+        <p class="event-description">{{ event.description }}</p>
+
+        <div class="card-footer">
+          <div class="capacity-stat">
+            <span class="stat-label">Available Capacity</span>
+            <span class="stat-value">{{ event.availableSeats | number }} / {{ event.totalSeats | number }}</span>
+          </div>
+
+          <a [routerLink]="['/events', event.id]" class="btn-details">
+            View Details &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

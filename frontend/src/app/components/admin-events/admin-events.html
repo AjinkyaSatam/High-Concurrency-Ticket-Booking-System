@@ -1,0 +1,198 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <div>
+      <span class="badge-admin">Admin Portal • Management Hub</span>
+      <h1>Venues & Events Management</h1>
+      <p>Configure stadium venues, event schedules, seating capacities, and categories.</p>
+    </div>
+
+    <div class="header-actions">
+      <button *ngIf="activeTab() === 'venues'" class="btn-create" (click)="openVenueModal()">
+        + Create New Venue
+      </button>
+      <button *ngIf="activeTab() === 'events'" class="btn-create" (click)="openEventModal()">
+        + Create New Event
+      </button>
+    </div>
+  </div>
+
+  <!-- Banner feedback -->
+  <div *ngIf="message()" class="alert alert-success">
+    {{ message() }}
+  </div>
+  <div *ngIf="error()" class="alert alert-error">
+    {{ error() }}
+  </div>
+
+  <!-- Tabs Header -->
+  <div class="tab-nav">
+    <button class="tab-btn" [class.active]="activeTab() === 'events'" (click)="switchTab('events')">
+      Events ({{ events().length }})
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'venues'" (click)="switchTab('venues')">
+      Venues ({{ venues().length }})
+    </button>
+  </div>
+
+  <!-- Events Tab Content -->
+  <div *ngIf="activeTab() === 'events'" class="tab-content">
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Venue</th>
+            <th>Event Date</th>
+            <th>Status</th>
+            <th>Capacity</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ev of events()">
+            <td>#{{ ev.id }}</td>
+            <td class="font-bold">{{ ev.title }}</td>
+            <td><span class="tag-cat">{{ ev.category }}</span></td>
+            <td>{{ ev.venue.name }} ({{ ev.venue.city }})</td>
+            <td>{{ ev.eventDate | date:'mediumDate' }}</td>
+            <td><span class="status-pill">{{ ev.status }}</span></td>
+            <td>{{ ev.availableSeats | number }} / {{ ev.totalSeats | number }}</td>
+            <td>
+              <button class="btn-action-delete" (click)="deleteEvent(ev.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Venues Tab Content -->
+  <div *ngIf="activeTab() === 'venues'" class="tab-content">
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Venue Name</th>
+            <th>City</th>
+            <th>Address</th>
+            <th>Capacity</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of venues()">
+            <td>#{{ v.id }}</td>
+            <td class="font-bold">{{ v.name }}</td>
+            <td>{{ v.city }}</td>
+            <td>{{ v.address }}</td>
+            <td>{{ v.capacity | number }} seats</td>
+            <td>
+              <button class="btn-action-delete" (click)="deleteVenue(v.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create Venue Modal -->
+  <div *ngIf="showVenueModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New Venue</h3>
+        <button class="btn-close" (click)="closeVenueModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="submitVenue()">
+          <div class="form-group">
+            <label>Venue Name *</label>
+            <input type="text" [(ngModel)]="venueForm.name" name="name" required placeholder="e.g. Olympic Arena" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City *</label>
+              <input type="text" [(ngModel)]="venueForm.city" name="city" required placeholder="e.g. Paris" />
+            </div>
+            <div class="form-group">
+              <label>Capacity *</label>
+              <input type="number" [(ngModel)]="venueForm.capacity" name="capacity" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Address *</label>
+            <input type="text" [(ngModel)]="venueForm.address" name="address" required placeholder="Full street address" />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="venueForm.description" name="description" rows="3"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeVenueModal()">Cancel</button>
+            <button type="submit" class="btn-submit">Save Venue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Event Modal -->
+  <div *ngIf="showEventModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New Event</h3>
+        <button class="btn-close" (click)="closeEventModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="submitEvent()">
+          <div class="form-group">
+            <label>Event Title *</label>
+            <input type="text" [(ngModel)]="eventForm.title" name="title" required placeholder="e.g. Rock World Tour 2026" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category *</label>
+              <select [(ngModel)]="eventForm.category" name="category" required>
+                <option value="Concert">Concert</option>
+                <option value="Conference">Conference</option>
+                <option value="Orchestra">Orchestra</option>
+                <option value="Sports">Sports</option>
+                <option value="Theater">Theater</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Venue *</label>
+              <select [(ngModel)]="eventForm.venueId" name="venueId" required>
+                <option *ngFor="let v of venues()" [value]="v.id">{{ v.name }} ({{ v.city }})</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Event Date & Time *</label>
+              <input type="datetime-local" [(ngModel)]="eventForm.eventDate" name="eventDate" required />
+            </div>
+            <div class="form-group">
+              <label>Total Seats *</label>
+              <input type="number" [(ngModel)]="eventForm.totalSeats" name="totalSeats" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Banner Image URL</label>
+            <input type="url" [(ngModel)]="eventForm.bannerUrl" name="bannerUrl" placeholder="https://images.unsplash.com/..." />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="eventForm.description" name="description" rows="3"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeEventModal()">Cancel</button>
+            <button type="submit" class="btn-submit">Save Event</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,81 @@
+<div class="detail-container">
+  <a routerLink="/events" class="back-link">&larr; Back to Events</a>
+
+  <div *ngIf="loading()" class="state-card">
+    <div class="spinner"></div>
+    <p>Loading event information...</p>
+  </div>
+
+  <div *ngIf="error()" class="state-card error-card">
+    <p>{{ error() }}</p>
+  </div>
+
+  <div *ngIf="!loading() && !error() && event()" class="detail-card">
+    <div class="banner-header">
+      <img [src]="event()?.bannerUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80'" [alt]="event()?.title" />
+      <div class="banner-overlay">
+        <span class="category-badge">{{ event()?.category }}</span>
+        <h1>{{ event()?.title }}</h1>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <div class="main-info">
+        <div class="info-block">
+          <h3>About this Event</h3>
+          <p>{{ event()?.description }}</p>
+        </div>
+
+        <div class="venue-card">
+          <h3>Venue Location</h3>
+          <div class="venue-detail-item">
+            <strong>Venue Name:</strong> {{ event()?.venue?.name }}
+          </div>
+          <div class="venue-detail-item">
+            <strong>City:</strong> {{ event()?.venue?.city }}
+          </div>
+          <div class="venue-detail-item">
+            <strong>Full Address:</strong> {{ event()?.venue?.address }}
+          </div>
+          <div class="venue-detail-item">
+            <strong>Total Capacity:</strong> {{ event()?.venue?.capacity | number }} attendees
+          </div>
+          <p *ngIf="event()?.venue?.description" class="venue-desc">
+            {{ event()?.venue?.description }}
+          </p>
+        </div>
+      </div>
+
+      <div class="sidebar-info">
+        <div class="booking-box">
+          <div class="status-indicator">
+            <span class="dot"></span> {{ event()?.status }}
+          </div>
+
+          <div class="seats-counter">
+            <div class="seats-num">{{ event()?.availableSeats | number }}</div>
+            <div class="seats-text">Seats Currently Available out of {{ event()?.totalSeats | number }}</div>
+          </div>
+
+          <div class="event-meta-item">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <div>
+              <span class="meta-label">Date & Time</span>
+              <span class="meta-val">{{ event()?.eventDate | date:'fullDate' }} • {{ event()?.eventDate | date:'shortTime' }}</span>
+            </div>
+          </div>
+
+          <!-- Action Button linked to Phase 4 -->
+          <div class="action-cta">
+            <button class="btn-select-seats" disabled title="Phase 4 Seat Map Coming Next!">
+              ⚡ Select Seats & Reserve (Phase 4)
+            </button>
+            <span class="hint-phase">Phase 4 will enable real-time grid seat map & Redis ticket locking!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

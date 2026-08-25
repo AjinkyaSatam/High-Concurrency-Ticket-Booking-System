@@ -6,12 +6,11 @@
         <div class="logo-badge">TV</div>
         <span class="brand-name">Ticket<span class="gradient-text">Verse</span></span>
       </a>
-      <span class="system-badge">MODULAR MONOLITH</span>
+      <span class="system-badge">PHASE 3 • VENUE & EVENTS</span>
     </div>
     <nav class="nav-links">
-      <a routerLink="/" class="nav-link active">Architecture</a>
-      <a href="#services" class="nav-link">Services</a>
-      <a href="#roadmap" class="nav-link">Roadmap</a>
+      <a routerLink="/events" routerLinkActive="active" class="nav-link">🔥 Browse Events</a>
+      <a routerLink="/admin/events" routerLinkActive="active" class="nav-link">⚙️ Admin Portal</a>
     </nav>
     <div class="header-actions">
       <ng-container *ngIf="authService.currentUser() as user; else unauth">
@@ -32,53 +31,8 @@
 
   <router-outlet></router-outlet>
 
-  <!-- Dashboard Overview Content -->
+  <!-- System Roadmap Footer Section -->
   <main class="main-content">
-    <section class="hero-section glass-panel">
-      <div class="hero-badge">⚡ Ultra-High Concurrency Engine</div>
-      <h1 class="hero-title">
-        Zero Double-Bookings.<br>
-        <span class="gradient-text">Sub-Millisecond Reservations.</span>
-      </h1>
-      <p class="hero-subtitle">
-        High-scale ticket booking platform built with Spring Boot 3.3, Java 21, PostgreSQL, Redis, and Angular 18. Phase 2 JWT Authentication and Security filters active.
-      </p>
-
-      <div class="hero-stats">
-        <div class="stat-card">
-          <div class="stat-value">JWT + BCrypt</div>
-          <div class="stat-label">Stateless Security</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">100%</div>
-          <div class="stat-label">ACID Guaranteed</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">Phase 2</div>
-          <div class="stat-label">System Milestone</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Services Grid -->
-    <section id="services" class="services-section">
-      <h2 class="section-title">System Micro-Architecture</h2>
-      <div class="services-grid">
-        <div *ngFor="let service of systemServices" class="service-card glass-panel">
-          <div class="service-header">
-            <span class="service-title">{{ service.name }}</span>
-            <span class="badge" [class.badge-active]="service.status === 'ACTIVE' || service.status === 'READY'">
-              {{ service.status }}
-            </span>
-          </div>
-          <p class="service-type">{{ service.type }}</p>
-          <div class="service-footer">
-            <span class="port-tag">Port: {{ service.port }}</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Development Roadmap -->
     <section id="roadmap" class="roadmap-section glass-panel">
       <h2 class="section-title">Development Execution Roadmap</h2>
@@ -97,6 +51,6 @@
   </main>
 
   <footer class="footer">
-    <p>High-Concurrency Ticket Booking System &bull; Phase 2 JWT Authentication Engine</p>
+    <p>High-Concurrency Ticket Booking System &bull; Phase 3 Venue & Event Management Engine</p>
   </footer>
 </div>
