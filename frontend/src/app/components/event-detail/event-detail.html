@@ -3,7 +3,7 @@
 
   <div *ngIf="loading()" class="state-card">
     <div class="spinner"></div>
-    <p>Loading event information...</p>
+    <p>Loading event details...</p>
   </div>
 
   <div *ngIf="error()" class="state-card error-card">
@@ -27,54 +27,172 @@
         </div>
 
         <div class="venue-card">
-          <h3>Venue Location</h3>
+          <h3>Venue & Details</h3>
           <div class="venue-detail-item">
-            <strong>Venue Name:</strong> {{ event()?.venue?.name }}
+            <strong>Venue:</strong> {{ event()?.venue?.name }} ({{ event()?.venue?.city }})
           </div>
           <div class="venue-detail-item">
-            <strong>City:</strong> {{ event()?.venue?.city }}
+            <strong>Address:</strong> {{ event()?.venue?.address }}
           </div>
           <div class="venue-detail-item">
-            <strong>Full Address:</strong> {{ event()?.venue?.address }}
+            <strong>Date & Time:</strong> {{ event()?.eventDate | date:'fullDate' }} at {{ event()?.eventDate | date:'shortTime' }}
           </div>
           <div class="venue-detail-item">
-            <strong>Total Capacity:</strong> {{ event()?.venue?.capacity | number }} attendees
+            <strong>Available Seats:</strong> {{ event()?.availableSeats | number }} / {{ event()?.totalSeats | number }}
           </div>
-          <p *ngIf="event()?.venue?.description" class="venue-desc">
-            {{ event()?.venue?.description }}
-          </p>
+        </div>
+
+        <!-- SEAT MAP SECTION (PHASE 4 & 5) -->
+        <div class="seat-map-container">
+          <div class="seat-map-header">
+            <div>
+              <h3>Interactive Seat Selection</h3>
+              <p class="subtitle">Click on available seats to add them to your order</p>
+            </div>
+            <button *ngIf="authService.isAdmin() && seats().length === 0" (click)="generateSeats()" class="btn-gen-seats">
+              ⚡ Regenerate Grid Seats (Admin)
+            </button>
+          </div>
+
+          <div class="seat-legend">
+            <div class="legend-item"><span class="legend-box available vip"></span> VIP ($150)</div>
+            <div class="legend-item"><span class="legend-box available premium"></span> Premium ($100)</div>
+            <div class="legend-item"><span class="legend-box available regular"></span> Regular ($50)</div>
+            <div class="legend-item"><span class="legend-box selected"></span> Selected</div>
+            <div class="legend-item"><span class="legend-box booked"></span> Booked</div>
+          </div>
+
+          <div class="screen-stage">
+            <div class="screen-arc">STAGE / SCREEN</div>
+          </div>
+
+          <div *ngIf="loadingSeats()" class="seat-loading">
+            <div class="spinner"></div>
+            <p>Loading interactive seat map...</p>
+          </div>
+
+          <div *ngIf="!loadingSeats() && sections().length > 0" class="seating-grid-container">
+            <div *ngFor="let section of sections()" class="section-block">
+              <div class="section-title">
+                <span>{{ section.sectionName }} SECTION</span>
+                <span class="price-tag">${{ section.price | number:'1.2-2' }}</span>
+              </div>
+
+              <div class="rows-container">
+                <div *ngFor="let row of section.rows" class="seat-row">
+                  <span class="row-label">{{ row.rowName }}</span>
+                  <div class="seats-list">
+                    <button 
+                      *ngFor="let seat of row.seats"
+                      class="seat-node"
+                      [class.vip]="seat.sectionName === 'VIP'"
+                      [class.premium]="seat.sectionName === 'PREMIUM'"
+                      [class.regular]="seat.sectionName === 'REGULAR'"
+                      [class.selected]="isSelected(seat.id)"
+                      [class.booked]="seat.status === 'BOOKED'"
+                      [class.held]="seat.status === 'HELD'"
+                      [disabled]="seat.status !== 'AVAILABLE'"
+                      (click)="toggleSeat(seat)"
+                      [title]="seat.seatCode + ' - $' + seat.price + ' (' + seat.status + ')'"
+                    >
+                      {{ seat.seatNumber }}
+                    </button>
+                  </div>
+                  <span class="row-label">{{ row.rowName }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
+      <!-- SELECTION & BOOKING SIDEBAR -->
       <div class="sidebar-info">
-        <div class="booking-box">
+        <div class="booking-box sticky-sidebar">
           <div class="status-indicator">
             <span class="dot"></span> {{ event()?.status }}
           </div>
 
-          <div class="seats-counter">
-            <div class="seats-num">{{ event()?.availableSeats | number }}</div>
-            <div class="seats-text">Seats Currently Available out of {{ event()?.totalSeats | number }}</div>
+          <h3>Order Summary</h3>
+          <p class="summary-subtitle">Select up to 6 seats</p>
+
+          <div *ngIf="selectedSeats().length === 0" class="empty-selection">
+            <div class="empty-icon">🎟️</div>
+            <p>No seats selected yet. Click on the grid map to choose seats.</p>
           </div>
 
-          <div class="event-meta-item">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <div>
-              <span class="meta-label">Date & Time</span>
-              <span class="meta-val">{{ event()?.eventDate | date:'fullDate' }} • {{ event()?.eventDate | date:'shortTime' }}</span>
+          <div *ngIf="selectedSeats().length > 0" class="selection-details">
+            <div class="selected-chips">
+              <span *ngFor="let s of selectedSeats()" class="seat-chip" (click)="toggleSeat(s)" title="Click to remove">
+                {{ s.seatCode }} (${{ s.price }}) &times;
+              </span>
             </div>
-          </div>
 
-          <!-- Action Button linked to Phase 4 -->
-          <div class="action-cta">
-            <button class="btn-select-seats" disabled title="Phase 4 Seat Map Coming Next!">
-              ⚡ Select Seats & Reserve (Phase 4)
+            <div class="price-breakdown">
+              <div class="price-row" *ngFor="let s of selectedSeats()">
+                <span>Seat {{ s.seatCode }} ({{ s.sectionName }})</span>
+                <span>${{ s.price | number:'1.2-2' }}</span>
+              </div>
+              <div class="price-row total-row">
+                <strong>Total Price</strong>
+                <strong class="total-amount">${{ getTotalPrice() | number:'1.2-2' }}</strong>
+              </div>
+            </div>
+
+            <div *ngIf="bookingError()" class="alert alert-error">
+              {{ bookingError() }}
+            </div>
+
+            <button 
+              class="btn-book-now" 
+              [disabled]="bookingInProgress()"
+              (click)="bookSelectedSeats()"
+            >
+              <span *ngIf="!bookingInProgress()">⚡ Book {{ selectedSeats().length }} Ticket(s) Now</span>
+              <span *ngIf="bookingInProgress()" class="btn-loader">Processing Reservation...</span>
             </button>
-            <span class="hint-phase">Phase 4 will enable real-time grid seat map & Redis ticket locking!</span>
+            <p class="guarantee-note">🔒 Instant Digital Confirmation • Instant Seat Hold</p>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKING CONFIRMATION MODAL -->
+  <div *ngIf="bookingSuccess()" class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="success-icon">🎉</div>
+        <h2>Booking Confirmed!</h2>
+        <p class="ref-code">Reference Code: <strong>{{ bookingSuccess()?.bookingReference }}</strong></p>
+      </div>
+
+      <div class="modal-body">
+        <div class="confirm-event-info">
+          <h4>{{ bookingSuccess()?.eventTitle }}</h4>
+          <p>{{ bookingSuccess()?.venueName }} • {{ bookingSuccess()?.eventDate | date:'medium' }}</p>
+        </div>
+
+        <div class="tickets-grid">
+          <div *ngFor="let ticket of bookingSuccess()?.tickets" class="ticket-card-mini">
+            <div class="ticket-head">
+              <span class="t-badge">{{ ticket.sectionName }}</span>
+              <span class="t-code">{{ ticket.ticketCode }}</span>
+            </div>
+            <div class="t-seat">Seat {{ ticket.seatCode }}</div>
+            <div class="t-price">${{ ticket.price | number:'1.2-2' }}</div>
+          </div>
+        </div>
+
+        <div class="confirm-summary">
+          <span>Total Amount Paid:</span>
+          <strong>${{ bookingSuccess()?.totalAmount | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">Close</button>
+        <a routerLink="/my-bookings" class="btn-primary-link" (click)="closeModal()">View In My Bookings &rarr;</a>
       </div>
     </div>
   </div>

@@ -25,9 +25,9 @@ export class AppComponent {
   roadmapPhases = [
     { num: 1, name: 'Project Setup & Architecture', status: 'COMPLETED', active: false },
     { num: 2, name: 'JWT Auth & User Roles', status: 'COMPLETED', active: false },
-    { num: 3, name: 'Venue & Event Management', status: 'COMPLETED', active: true },
-    { num: 4, name: 'Seat Map Grid & Generation', status: 'UPCOMING', active: false },
-    { num: 5, name: 'Basic Booking Engine', status: 'UPCOMING', active: false },
+    { num: 3, name: 'Venue & Event Management', status: 'COMPLETED', active: false },
+    { num: 4, name: 'Seat Map Grid & Generation', status: 'COMPLETED', active: false },
+    { num: 5, name: 'Basic Booking Engine', status: 'COMPLETED', active: true },
     { num: 6, name: 'High Concurrency & Locks', status: 'UPCOMING', active: false },
     { num: 7, name: 'Temporary Seat Holds', status: 'UPCOMING', active: false },
     { num: 8, name: 'Idempotent Payment Gateway', status: 'UPCOMING', active: false }

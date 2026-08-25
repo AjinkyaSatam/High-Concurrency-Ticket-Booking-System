@@ -1,0 +1,86 @@
+<div class="bookings-container">
+  <div class="header-section">
+    <div>
+      <span class="badge-phase">Phase 5 Active • Digital Booking Hub</span>
+      <h1>My Reserved Tickets</h1>
+      <p class="subtitle">View and manage your upcoming event passes and ticket reservations</p>
+    </div>
+    <a routerLink="/events" class="btn-browse-events">+ Browse More Events</a>
+  </div>
+
+  <div *ngIf="loading()" class="state-card">
+    <div class="spinner"></div>
+    <p>Retrieving your ticket reservations...</p>
+  </div>
+
+  <div *ngIf="error()" class="state-card error-card">
+    <p>{{ error() }}</p>
+  </div>
+
+  <div *ngIf="!loading() && !error() && bookings().length === 0" class="state-card empty-card">
+    <div class="empty-icon">🎟️</div>
+    <h3>No Bookings Found</h3>
+    <p>You haven't reserved any tickets yet. Explore live events and lock in your seats!</p>
+    <a routerLink="/events" class="btn-primary">Explore Events Now</a>
+  </div>
+
+  <div *ngIf="!loading() && !error() && bookings().length > 0" class="bookings-grid">
+    <div *ngFor="let b of bookings()" class="booking-card" [class.cancelled-card]="b.status === 'CANCELLED'">
+      <div class="booking-card-header">
+        <div class="header-main">
+          <span class="ref-badge">{{ b.bookingReference }}</span>
+          <span 
+            class="status-tag" 
+            [class.tag-confirmed]="b.status === 'CONFIRMED'"
+            [class.tag-cancelled]="b.status === 'CANCELLED'"
+          >
+            {{ b.status }}
+          </span>
+        </div>
+        <span class="booking-time">Booked on {{ b.bookingTime | date:'medium' }}</span>
+      </div>
+
+      <div class="booking-card-body">
+        <div class="event-details">
+          <h2>{{ b.eventTitle }}</h2>
+          <div class="meta-row">
+            <span>📍 {{ b.venueName }}</span>
+            <span>📅 {{ b.eventDate | date:'fullDate' }} • {{ b.eventDate | date:'shortTime' }}</span>
+          </div>
+        </div>
+
+        <div class="tickets-section">
+          <h4>Reserved Seats & Passes ({{ b.tickets.length }})</h4>
+          <div class="tickets-flex">
+            <div *ngFor="let t of b.tickets" class="ticket-pill">
+              <div class="pill-sec">{{ t.sectionName }}</div>
+              <div class="pill-seat">Seat {{ t.seatCode }}</div>
+              <div class="pill-code">{{ t.ticketCode }}</div>
+              <div class="pill-price">${{ t.price | number:'1.2-2' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="booking-card-footer">
+        <div class="total-info">
+          <span class="total-label">Total Paid:</span>
+          <span class="total-val">${{ b.totalAmount | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="actions">
+          <button 
+            *ngIf="b.status === 'CONFIRMED'" 
+            class="btn-cancel" 
+            [disabled]="cancellingId() === b.id"
+            (click)="cancelBooking(b.id)"
+          >
+            <span *ngIf="cancellingId() !== b.id">Cancel Booking</span>
+            <span *ngIf="cancellingId() === b.id">Cancelling...</span>
+          </button>
+          <span *ngIf="b.status === 'CANCELLED'" class="cancelled-note">Booking Voided</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,10 +6,11 @@
         <div class="logo-badge">TV</div>
         <span class="brand-name">Ticket<span class="gradient-text">Verse</span></span>
       </a>
-      <span class="system-badge">PHASE 3 • VENUE & EVENTS</span>
+      <span class="system-badge">PHASE 5 • SEATS & BOOKINGS</span>
     </div>
     <nav class="nav-links">
       <a routerLink="/events" routerLinkActive="active" class="nav-link">🔥 Browse Events</a>
+      <a routerLink="/my-bookings" *ngIf="authService.isAuthenticated()" routerLinkActive="active" class="nav-link">🎟️ My Bookings</a>
       <a routerLink="/admin/events" routerLinkActive="active" class="nav-link">⚙️ Admin Portal</a>
     </nav>
     <div class="header-actions">
@@ -51,6 +52,6 @@
   </main>
 
   <footer class="footer">
-    <p>High-Concurrency Ticket Booking System &bull; Phase 3 Venue & Event Management Engine</p>
+    <p>High-Concurrency Ticket Booking System &bull; Phase 5 Seat Grid & Booking Engine Engine</p>
   </footer>
 </div>
