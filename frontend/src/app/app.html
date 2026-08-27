@@ -11,7 +11,8 @@
     <nav class="nav-links">
       <a routerLink="/events" routerLinkActive="active" class="nav-link">🔥 Browse Events</a>
       <a routerLink="/my-bookings" *ngIf="authService.isAuthenticated()" routerLinkActive="active" class="nav-link">🎟️ My Bookings</a>
-      <a routerLink="/admin/events" routerLinkActive="active" class="nav-link">⚙️ Admin Portal</a>
+      <a routerLink="/admin/analytics" *ngIf="authService.isAdmin()" routerLinkActive="active" class="nav-link">📊 Analytics</a>
+      <a routerLink="/admin/events" *ngIf="authService.isAdmin()" routerLinkActive="active" class="nav-link">⚙️ Admin Portal</a>
     </nav>
     <div class="header-actions">
       <ng-container *ngIf="authService.currentUser() as user; else unauth">

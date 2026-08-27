@@ -60,4 +60,23 @@ export class MyBookingsComponent implements OnInit {
       }
     });
   }
+
+  downloadETicket(bookingId: number): void {
+    this.bookingService.downloadETicketPdf(bookingId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `eticket-booking-${bookingId}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Failed to download e-ticket', err);
+        alert('Could not download E-Ticket pass.');
+      }
+    });
+  }
 }

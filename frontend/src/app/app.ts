@@ -32,7 +32,9 @@ export class AppComponent {
     { num: 7, name: 'Temporary Seat Holds', status: 'COMPLETED', active: false },
     { num: 8, name: 'Idempotent Payment Gateway', status: 'COMPLETED', active: false },
     { num: 9, name: 'Real-time WebSockets', status: 'COMPLETED', active: false },
-    { num: 10, name: 'Rate Limiting & Readiness', status: 'COMPLETED', active: true }
+    { num: 10, name: 'Rate Limiting & Readiness', status: 'COMPLETED', active: false },
+    { num: 11, name: 'Virtual Waiting Room Queue', status: 'COMPLETED', active: false },
+    { num: 12, name: 'E-Tickets, Analytics & Suite', status: 'COMPLETED', active: true }
   ];
 
   logout(): void {

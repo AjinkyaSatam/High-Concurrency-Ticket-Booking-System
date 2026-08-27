@@ -59,4 +59,12 @@ export class BookingService {
   cancelBooking(id: number): Observable<BookingResponse> {
     return this.http.post<BookingResponse>(`${this.apiUrl}/${id}/cancel`, {});
   }
+
+  downloadETicketPdf(bookingId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${bookingId}/ticket-pdf`, { responseType: 'blob' });
+  }
+
+  verifyTicketQr(ticketCode: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/verify/${ticketCode}`);
+  }
 }

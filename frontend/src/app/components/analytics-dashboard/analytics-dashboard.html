@@ -1,0 +1,127 @@
+<div class="analytics-container">
+  <div class="dashboard-header glass-panel">
+    <div>
+      <span class="badge-phase">Phase 12 Active • Executive Telemetry & Real-Time Analytics</span>
+      <h1 class="title">System Performance & Business Intelligence</h1>
+      <p class="subtitle">High-Concurrency Telemetry, Occupancy Metrics, and Redis Lock Multi-Tenant Health</p>
+    </div>
+    <div class="actions">
+      <button (click)="loadMetrics()" class="btn btn-secondary">🔄 Refresh Metrics</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="loading-box">
+    <div class="spinner"></div>
+    <p>Calculating live database and Redis lock telemetry...</p>
+  </div>
+
+  <div *ngIf="error()" class="error-box">
+    <p>⚠️ {{ error() }}</p>
+  </div>
+
+  <div *ngIf="!loading() && !error() && analytics() as a" class="dashboard-grid">
+    <!-- Key Performance Indicator Cards -->
+    <div class="kpi-card glass-panel">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-info">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value">${{ a.totalRevenue | number:'1.2-2' }}</div>
+        <div class="kpi-sub">Confirmed Ledger Sales</div>
+      </div>
+    </div>
+
+    <div class="kpi-card glass-panel">
+      <div class="kpi-icon">🎫</div>
+      <div class="kpi-info">
+        <div class="kpi-label">Tickets Issued</div>
+        <div class="kpi-value">{{ a.totalTicketsSold }}</div>
+        <div class="kpi-sub">Cryptographically Signed</div>
+      </div>
+    </div>
+
+    <div class="kpi-card glass-panel">
+      <div class="kpi-icon">🎯</div>
+      <div class="kpi-info">
+        <div class="kpi-label">Seat Occupancy</div>
+        <div class="kpi-value">{{ a.occupancyRate }}%</div>
+        <div class="kpi-sub">{{ a.bookedSeats }} / {{ a.totalSeats }} Seats Booked</div>
+      </div>
+    </div>
+
+    <div class="kpi-card glass-panel">
+      <div class="kpi-icon">⚡</div>
+      <div class="kpi-info">
+        <div class="kpi-label">Lock Conversion</div>
+        <div class="kpi-value">{{ a.conversionRate }}%</div>
+        <div class="kpi-sub">Hold-to-Booking Ratio</div>
+      </div>
+    </div>
+
+    <!-- Telemetry Breakdown Section -->
+    <div class="full-width-section glass-panel">
+      <h3 class="sec-title">📊 Live Seat & Cache Telemetry Breakdown</h3>
+      <div class="telemetry-bar">
+        <div class="t-segment seg-booked" [style.width.%]="a.totalSeats > 0 ? (a.bookedSeats / a.totalSeats * 100) : 0" title="Booked">
+          Booked ({{ a.bookedSeats }})
+        </div>
+        <div class="t-segment seg-held" [style.width.%]="a.totalSeats > 0 ? (a.heldSeats / a.totalSeats * 100) : 0" title="Held">
+          Held ({{ a.heldSeats }})
+        </div>
+        <div class="t-segment seg-available" [style.width.%]="a.totalSeats > 0 ? (a.availableSeats / a.totalSeats * 100) : 100" title="Available">
+          Available ({{ a.availableSeats }})
+        </div>
+      </div>
+
+      <div class="telemetry-legend">
+        <span class="leg-item leg-booked">■ Booked (Confirmed DB Ledger)</span>
+        <span class="leg-item leg-held">■ Held (Redis TTL Locks)</span>
+        <span class="leg-item leg-available">■ Available (Ready to Hold)</span>
+      </div>
+    </div>
+
+    <!-- System Architecture Health Panel -->
+    <div class="half-section glass-panel">
+      <h3 class="sec-title">🛡️ Distributed Lock Engine Status</h3>
+      <div class="status-list">
+        <div class="status-row">
+          <span>Concurrency Control Engine:</span>
+          <span class="badge-status status-green">{{ a.systemConcurrencyMode }}</span>
+        </div>
+        <div class="status-row">
+          <span>Redis Distributed Cache:</span>
+          <span class="badge-status status-green">ONLINE ({{ a.redisStatus }})</span>
+        </div>
+        <div class="status-row">
+          <span>Total Registered Users:</span>
+          <span class="val-text">{{ a.totalUsers }} Users</span>
+        </div>
+        <div class="status-row">
+          <span>Active Events in Catalog:</span>
+          <span class="val-text">{{ a.totalEvents }} Events</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Virtual Waiting Room Admin Control Panel -->
+    <div class="half-section glass-panel">
+      <h3 class="sec-title">🚦 Virtual Waiting Room Controller</h3>
+      <p class="panel-desc">Admit waiting fans in controlled batches during high-demand drops.</p>
+
+      <div *ngIf="drainMessage()" class="alert-success">
+        {{ drainMessage() }}
+      </div>
+
+      <div class="admin-queue-form">
+        <label>Event ID:</label>
+        <input type="number" [(ngModel)]="drainEventId" class="form-input" style="width: 80px;" />
+
+        <label>Admit Batch Size:</label>
+        <input type="number" [(ngModel)]="drainBatchSize" class="form-input" style="width: 80px;" />
+
+        <button (click)="triggerQueueDrain(drainEventId(), drainBatchSize())" class="btn btn-primary">
+          ⚡ Drain Queue Batch
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
