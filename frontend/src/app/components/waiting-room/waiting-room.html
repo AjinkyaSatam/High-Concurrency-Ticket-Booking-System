@@ -1,0 +1,62 @@
+<div class="waiting-room-container">
+  <div class="glass-panel waiting-card">
+    <div class="waiting-header">
+      <span class="badge-phase">Phase 11 Active • Virtual Traffic Waiting Room</span>
+      <h1 class="event-title" *ngIf="event()">{{ event()?.title }}</h1>
+      <p class="event-venue" *ngIf="event()">📍 {{ event()?.venueName }} • 📅 {{ event()?.eventDate | date:'fullDate' }}</p>
+    </div>
+
+    <div *ngIf="loading()" class="state-box">
+      <div class="spinner"></div>
+      <p>Entering high-concurrency waiting room...</p>
+    </div>
+
+    <div *ngIf="error()" class="state-box error-box">
+      <p class="error-msg">⚠️ {{ error() }}</p>
+      <a [routerLink]="['/events']" class="btn btn-secondary">Return to Events Catalog</a>
+    </div>
+
+    <div *ngIf="!loading() && !error() && queueStatus() as q" class="queue-body">
+      
+      <!-- WAITING STATE -->
+      <div *ngIf="q.status === 'WAITING'" class="queue-active-box">
+        <div class="token-badge">QUEUE PASS TOKEN: <code>{{ q.queueToken }}</code></div>
+
+        <div class="position-display">
+          <div class="pos-label">Your Queue Position</div>
+          <div class="pos-number">#{{ q.position }}</div>
+          <div class="pos-subtext">out of {{ q.totalWaiting }} waiting fans</div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" [style.width.%]="q.totalWaiting > 0 ? (100 - (q.position / q.totalWaiting * 100)) : 100"></div>
+        </div>
+
+        <div class="metrics-row">
+          <div class="metric">
+            <span class="m-label">Est. Wait Time</span>
+            <span class="m-val">~{{ q.estimatedWaitSeconds }} sec</span>
+          </div>
+          <div class="metric">
+            <span class="m-label">Queue Traffic Guard</span>
+            <span class="m-val active-val">ACTIVE (Redis Lock Shield)</span>
+          </div>
+        </div>
+
+        <div class="pulse-indicator">
+          <span class="pulse-dot"></span>
+          Live Queue Connection Active. Do not close or refresh this page.
+        </div>
+      </div>
+
+      <!-- ADMITTED STATE -->
+      <div *ngIf="q.status === 'ADMITTED'" class="admitted-box">
+        <div class="success-icon">🎉</div>
+        <h2>You're In! Access Granted</h2>
+        <p>Pass Code: <code>{{ q.admissionCode }}</code></p>
+        <p class="admit-sub">Redirecting you to the interactive seat map...</p>
+        <div class="spinner green-spinner"></div>
+      </div>
+    </div>
+  </div>
+</div>
