@@ -5,9 +5,12 @@ import com.ticketbooking.backend.entity.*;
 import com.ticketbooking.backend.repository.*;
 import com.ticketbooking.backend.service.BookingService;
 import com.ticketbooking.backend.service.DistributedLockService;
+import com.ticketbooking.backend.service.SeatEventPublisher;
 import com.ticketbooking.backend.service.SeatHoldService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -31,6 +35,8 @@ public class SeatHoldServiceImpl implements SeatHoldService {
     private final UserRepository userRepository;
     private final BookingService bookingService;
     private final DistributedLockService distributedLockService;
+    private final SeatEventPublisher seatEventPublisher;
+    private final RedissonClient redissonClient;
 
     @Override
     public SeatHoldResponse createHold(String userEmail, SeatHoldRequest request) {
@@ -139,8 +145,28 @@ public class SeatHoldServiceImpl implements SeatHoldService {
 
     @Override
     @Scheduled(fixedRate = 10000) // Runs every 10 seconds
-    @Transactional
     public void releaseExpiredHolds() {
+        RLock lock = redissonClient.getLock("lock:sweeper:seat-holds");
+        boolean acquired = false;
+        try {
+            acquired = lock.tryLock(0, 15, TimeUnit.SECONDS);
+            if (!acquired) {
+                log.debug("Another node is currently executing expired seat hold release sweeper. Skipping execution.");
+                return;
+            }
+            processExpiredHoldsRelease();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Expired hold release sweeper interrupted", e);
+        } finally {
+            if (acquired && lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
+    }
+
+    @Transactional
+    public void processExpiredHoldsRelease() {
         OffsetDateTime now = OffsetDateTime.now();
         List<SeatHold> expiredHolds = seatHoldRepository.findByStatusAndExpiresAtBefore(SeatHoldStatus.ACTIVE, now);
 
@@ -148,9 +174,20 @@ public class SeatHoldServiceImpl implements SeatHoldService {
             log.info("Found {} expired seat holds to clean up...", expiredHolds.size());
             for (SeatHold hold : expiredHolds) {
                 hold.setStatus(SeatHoldStatus.EXPIRED);
+                List<SeatResponse> releasedSeatResponses = new ArrayList<>();
                 for (Seat seat : hold.getSeats()) {
                     if (seat.getStatus() == SeatStatus.HELD) {
                         seat.setStatus(SeatStatus.AVAILABLE);
+                        releasedSeatResponses.add(SeatResponse.builder()
+                                .id(seat.getId())
+                                .eventId(seat.getEvent().getId())
+                                .sectionName(seat.getSectionName())
+                                .rowName(seat.getRowName())
+                                .seatNumber(seat.getSeatNumber())
+                                .seatCode(seat.getSeatCode())
+                                .price(seat.getPrice())
+                                .status(SeatStatus.AVAILABLE)
+                                .build());
                     }
                 }
                 seatHoldRepository.save(hold);
@@ -160,8 +197,13 @@ public class SeatHoldServiceImpl implements SeatHoldService {
                 long remaining = seatRepository.countByEventIdAndStatus(event.getId(), SeatStatus.AVAILABLE);
                 event.setAvailableSeats((int) remaining);
                 eventRepository.save(event);
+
+                // Publish live WebSocket notification for released seats
+                if (!releasedSeatResponses.isEmpty()) {
+                    seatEventPublisher.publishSeatUpdates(event.getId(), releasedSeatResponses);
+                }
             }
-            log.info("Successfully released expired seat holds.");
+            log.info("Successfully released expired seat holds and published WebSocket updates.");
         }
     }
 
