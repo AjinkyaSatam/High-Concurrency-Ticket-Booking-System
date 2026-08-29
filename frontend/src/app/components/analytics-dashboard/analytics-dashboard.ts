@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AnalyticsService, DashboardAnalytics } from '../../services/analytics.service';
 import { QueueService } from '../../services/queue.service';
@@ -7,7 +8,7 @@ import { QueueService } from '../../services/queue.service';
 @Component({
   selector: 'app-analytics-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './analytics-dashboard.html',
   styleUrl: './analytics-dashboard.css'
 })

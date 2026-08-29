@@ -3,7 +3,7 @@
     <div class="waiting-header">
       <span class="badge-phase">Phase 11 Active • Virtual Traffic Waiting Room</span>
       <h1 class="event-title" *ngIf="event()">{{ event()?.title }}</h1>
-      <p class="event-venue" *ngIf="event()">📍 {{ event()?.venueName }} • 📅 {{ event()?.eventDate | date:'fullDate' }}</p>
+      <p class="event-venue" *ngIf="event()">📍 {{ event()?.venueName || event()?.venue?.name }} • 📅 {{ event()?.eventDate | date:'fullDate' }}</p>
     </div>
 
     <div *ngIf="loading()" class="state-box">

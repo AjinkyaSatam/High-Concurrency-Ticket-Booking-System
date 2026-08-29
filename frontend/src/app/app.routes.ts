@@ -8,16 +8,18 @@ import { MyBookingsComponent } from './components/my-bookings/my-bookings';
 
 import { WaitingRoomComponent } from './components/waiting-room/waiting-room';
 import { AnalyticsDashboardComponent } from './components/analytics-dashboard/analytics-dashboard';
+import { authGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', component: EventsListComponent },
   { path: 'events', component: EventsListComponent },
   { path: 'events/:id', component: EventDetailComponent },
   { path: 'waiting-room/:eventId', component: WaitingRoomComponent },
-  { path: 'my-bookings', component: MyBookingsComponent },
+  { path: 'my-bookings', component: MyBookingsComponent, canActivate: [authGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'admin/events', component: AdminEventsComponent },
-  { path: 'admin/analytics', component: AnalyticsDashboardComponent },
+  { path: 'admin/events', component: AdminEventsComponent, canActivate: [adminGuard] },
+  { path: 'admin/analytics', component: AnalyticsDashboardComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];

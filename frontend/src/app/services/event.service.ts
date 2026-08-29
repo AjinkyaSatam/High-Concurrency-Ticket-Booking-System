@@ -13,7 +13,8 @@ export interface EventResponse {
   eventDate: string;
   status: EventStatus;
   bannerUrl?: string;
-  venue: VenueResponse;
+  venue?: VenueResponse;
+  venueName?: string;
   totalSeats: number;
   availableSeats: number;
   createdAt?: string;

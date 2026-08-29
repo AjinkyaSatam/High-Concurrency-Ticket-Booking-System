@@ -55,7 +55,7 @@
             <td>#{{ ev.id }}</td>
             <td class="font-bold">{{ ev.title }}</td>
             <td><span class="tag-cat">{{ ev.category }}</span></td>
-            <td>{{ ev.venue.name }} ({{ ev.venue.city }})</td>
+            <td>{{ ev.venue?.name }} ({{ ev.venue?.city }})</td>
             <td>{{ ev.eventDate | date:'mediumDate' }}</td>
             <td><span class="status-pill">{{ ev.status }}</span></td>
             <td>{{ ev.availableSeats | number }} / {{ ev.totalSeats | number }}</td>
