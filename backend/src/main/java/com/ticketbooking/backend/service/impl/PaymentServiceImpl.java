@@ -58,6 +58,9 @@ public class PaymentServiceImpl implements PaymentService {
         String txnRef = "TXN-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase();
         String method = request.getPaymentMethod() != null ? request.getPaymentMethod() : "CREDIT_CARD";
 
+        booking.setStatus(BookingStatus.CONFIRMED);
+        bookingRepository.save(booking);
+
         Payment payment = Payment.builder()
                 .idempotencyKey(idempotencyKey)
                 .transactionRef(txnRef)
