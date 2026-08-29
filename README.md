@@ -5,8 +5,9 @@
 ![Angular](https://img.shields.io/badge/Frontend-Angular_18-red)
 ![Redis](https://img.shields.io/badge/Cache-Redis_7_Redisson-dc382d)
 ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL_16-blue)
+![OpenAPI](https://img.shields.io/badge/Docs-Swagger_OpenAPI_3-85ea2d)
 
-A distributed, high-concurrency ticket reservation engine built to handle massive flash-sale traffic spikes, preventing double-bookings with **Redisson Distributed Locks**, **Redis Sorted Set Virtual Waiting Rooms**, **Idempotent Payments**, and **Cryptographically Verified ZXing QR E-Tickets**.
+A distributed, high-concurrency ticket reservation engine built to handle massive flash-sale traffic spikes, preventing double-bookings with **Redisson Distributed Locks**, **Redis Sorted Set Virtual Waiting Rooms**, **Distributed Background Hold Release Sweeper**, **Idempotent Payments**, and **Cryptographically Verified ZXing QR E-Tickets**.
 
 ---
 
@@ -23,10 +24,12 @@ A distributed, high-concurrency ticket reservation engine built to handle massiv
 |                              SPRING BOOT 3.3 BACKEND                              |
 |   - Bucket4j Token Bucket Rate Limiting Filter                                    |
 |   - Redisson Multi-Lock Concurrency Guard (lock:seat:{id})                        |
-|   - Redis TTL Temporary Seat Hold Engine (5-min auto release)                     |
+|   - Redisson Lock-Guarded Background Hold Sweeper (lock:sweeper:seat-holds)        |
+|   - Redis TTL Temporary Seat Hold Engine (5-min auto release + WS Push)           |
 |   - Virtual Waiting Room & Tokenized Traffic Queue Engine                         |
 |   - Idempotent Payment Intent Processor                                           |
 |   - Async ZXing QR Code E-Ticket Engine                                           |
+|   - Springdoc OpenAPI 3.0 & Swagger UI Integration                                |
 +-------------------+------------------------------------------+--------------------+
                     |                                          |
                     v                                          v
@@ -39,22 +42,13 @@ A distributed, high-concurrency ticket reservation engine built to handle massiv
 
 ---
 
-## ⚡ Complete 12-Phase System Roadmap
+## 📖 OpenAPI 3.0 Documentation & Swagger UI
 
-| Phase | Module Name | Architectural Description | Status |
-| :---: | :--- | :--- | :---: |
-| **Phase 1** | **Project Setup & Architecture** | Spring Boot 3.3, PostgreSQL 16, Redis 7, Docker Compose foundation. | ✅ DONE |
-| **Phase 2** | **JWT Auth & User Roles** | Spring Security 6 stateless JWT authentication and role-based access. | ✅ DONE |
-| **Phase 3** | **Venue & Event Management** | Venue seating configurations and live event publishing controllers. | ✅ DONE |
-| **Phase 4** | **Seat Map Grid Generation** | 2D interactive venue seat grid generation (VIP, Premium, Regular). | ✅ DONE |
-| **Phase 5** | **Basic Booking Engine** | Transactional ticket reservation workflow and user booking history. | ✅ DONE |
-| **Phase 6** | **High Concurrency & Locks** | Redisson distributed multi-locking on seat IDs + DB pessimistic locks. | ✅ DONE |
-| **Phase 7** | **Temporary Seat Holds** | Redis TTL seat hold reservations with auto-release countdown. | ✅ DONE |
-| **Phase 8** | **Idempotent Payment Gateway** | Idempotency keys to guarantee zero duplicate payment charges. | ✅ DONE |
-| **Phase 9** | **Real-time WebSockets** | STOMP WebSocket broadcast of live seat map state changes. | ✅ DONE |
-| **Phase 10**| **Rate Limiting & Readiness** | Bucket4j API rate limiting filter and Spring Actuator health probes. | ✅ DONE |
-| **Phase 11**| **Virtual Waiting Room Queue** | Redis `zset` tokenized traffic queue engine & live queue UI. | ✅ DONE |
-| **Phase 12**| **E-Tickets, Analytics & Suite**| ZXing QR E-Ticket generator, Admin Executive Dashboard & Load Suite. | ✅ DONE |
+Interactive Swagger UI documentation is exposed at:
+- **Swagger UI Console**: `http://localhost:8080/swagger-ui/index.html`
+- **OpenAPI 3.0 JSON Spec**: `http://localhost:8080/v3/api-docs`
+
+Postman Collection manifest available at `docs/postman_collection.json`.
 
 ---
 
@@ -92,10 +86,15 @@ npm start
 
 ---
 
-## 🧪 Concurrency Load Test Suite
+## 🧪 Concurrency & Unit Test Suite
 
-Run the Python multi-threaded load test script to verify zero double bookings under 50+ concurrent requests:
+Run unit and integration test suites:
 
 ```bash
+# Execute Backend JUnit 5 Test Suite (SeatHold, Booking, Payment, HighConcurrency)
+cd backend
+./mvnw test
+
+# Run Multi-Threaded Python Concurrency Stress Test (Zero double bookings check)
 python load-test/concurrency_load_test.py
 ```
