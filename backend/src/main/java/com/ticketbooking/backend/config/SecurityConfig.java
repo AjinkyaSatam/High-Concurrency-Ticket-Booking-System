@@ -46,7 +46,7 @@ public class SecurityConfig {
             .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/**", "/actuator/**", "/api/v1/health", "/ws-seats/**").permitAll()
+                .requestMatchers("/api/v1/auth/**", "/actuator/**", "/api/v1/health", "/ws-seats/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/venues/**", "/api/v1/events/**").permitAll()
                 .anyRequest().authenticated()
             );
