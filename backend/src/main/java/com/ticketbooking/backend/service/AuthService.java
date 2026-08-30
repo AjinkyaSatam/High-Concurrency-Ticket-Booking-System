@@ -99,4 +99,30 @@ public class AuthService {
             .roles(roleNames)
             .build();
     }
+
+    public AuthResponse refreshToken(com.ticketbooking.backend.dto.RefreshTokenRequest request) {
+        String token = request.getRefreshToken();
+        String userEmail = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(userEmail)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+
+        if (!jwtService.isTokenValid(token, user)) {
+            throw new IllegalArgumentException("Expired or invalid refresh token");
+        }
+
+        String newAccessToken = jwtService.generateToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+
+        Set<String> roleNames = user.getRoles().stream()
+            .map(Role::getName)
+            .collect(Collectors.toSet());
+
+        return AuthResponse.builder()
+            .token(newAccessToken)
+            .id(user.getId())
+            .email(user.getEmail())
+            .fullName(user.getFullName())
+            .roles(roleNames)
+            .build();
+    }
 }
