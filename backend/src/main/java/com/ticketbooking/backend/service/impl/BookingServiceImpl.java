@@ -30,6 +30,7 @@ public class BookingServiceImpl implements BookingService {
     private final DistributedLockService distributedLockService;
 
     @Override
+    @Transactional
     public BookingResponse createBooking(String userEmail, BookingRequest request) {
         // Acquire Redis distributed multi-lock across all requested seats first (prevents cross-node race conditions)
         return distributedLockService.executeWithSeatLocks(request.getSeatIds(), 5, 10, () -> processBookingTransaction(userEmail, request));

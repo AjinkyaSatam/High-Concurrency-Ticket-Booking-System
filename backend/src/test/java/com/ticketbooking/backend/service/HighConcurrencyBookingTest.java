@@ -1,5 +1,6 @@
 package com.ticketbooking.backend.service;
 
+import com.ticketbooking.backend.BackendApplication;
 import com.ticketbooking.backend.dto.BookingRequest;
 import com.ticketbooking.backend.dto.BookingResponse;
 import com.ticketbooking.backend.entity.*;
@@ -21,7 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(classes = BackendApplication.class)
+@ActiveProfiles("test")
 public class HighConcurrencyBookingTest {
 
     @Autowired
