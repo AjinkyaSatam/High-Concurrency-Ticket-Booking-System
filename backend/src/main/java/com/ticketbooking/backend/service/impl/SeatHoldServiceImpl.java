@@ -106,7 +106,6 @@ public class SeatHoldServiceImpl implements SeatHoldService {
     }
 
     @Override
-    @Transactional
     public BookingResponse confirmHoldToBooking(String userEmail, String holdReference) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
@@ -127,24 +126,32 @@ public class SeatHoldServiceImpl implements SeatHoldService {
             throw new IllegalStateException("Seat hold has expired. Please select your seats again.");
         }
 
-        // Revert HELD status back to AVAILABLE temporarily so createBooking can transition them to BOOKED cleanly
         List<Long> seatIds = seatHold.getSeats().stream().map(Seat::getId).collect(Collectors.toList());
-        for (Seat s : seatHold.getSeats()) {
-            s.setStatus(SeatStatus.AVAILABLE);
-        }
-        seatRepository.saveAll(seatHold.getSeats());
 
-        BookingRequest bookingRequest = BookingRequest.builder()
-                .eventId(seatHold.getEvent().getId())
-                .seatIds(seatIds)
-                .build();
+        return distributedLockService.executeWithSeatLocks(seatIds, 5, 10, () ->
+                transactionTemplate.execute(status -> {
+                    // Re-fetch seats with write lock inside distributed lock
+                    List<Seat> seats = seatRepository.findByEventIdAndIdInWithLock(seatHold.getEvent().getId(), seatIds);
+                    for (Seat s : seats) {
+                        if (s.getStatus() == SeatStatus.HELD) {
+                            s.setStatus(SeatStatus.AVAILABLE);
+                        }
+                    }
+                    seatRepository.saveAll(seats);
 
-        BookingResponse bookingResponse = bookingService.createBooking(userEmail, bookingRequest);
+                    BookingRequest bookingRequest = BookingRequest.builder()
+                            .eventId(seatHold.getEvent().getId())
+                            .seatIds(seatIds)
+                            .build();
 
-        seatHold.setStatus(SeatHoldStatus.CONFIRMED);
-        seatHoldRepository.save(seatHold);
+                    BookingResponse bookingResponse = bookingService.createBooking(userEmail, bookingRequest);
 
-        return bookingResponse;
+                    seatHold.setStatus(SeatHoldStatus.CONFIRMED);
+                    seatHoldRepository.save(seatHold);
+
+                    return bookingResponse;
+                })
+        );
     }
 
     @Override
