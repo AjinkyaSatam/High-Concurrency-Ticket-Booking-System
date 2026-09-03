@@ -10,6 +10,7 @@ import com.ticketbooking.backend.service.DistributedLockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -28,12 +29,14 @@ public class BookingServiceImpl implements BookingService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final DistributedLockService distributedLockService;
+    private final TransactionTemplate transactionTemplate;
 
     @Override
-    @Transactional
     public BookingResponse createBooking(String userEmail, BookingRequest request) {
-        // Acquire Redis distributed multi-lock across all requested seats first (prevents cross-node race conditions)
-        return distributedLockService.executeWithSeatLocks(request.getSeatIds(), 5, 10, () -> processBookingTransaction(userEmail, request));
+        // Acquire Redis distributed multi-lock across all requested seats first, then execute DB transaction inside the lock
+        return distributedLockService.executeWithSeatLocks(request.getSeatIds(), 5, 10, () ->
+                transactionTemplate.execute(status -> processBookingTransaction(userEmail, request))
+        );
     }
 
     @Transactional
