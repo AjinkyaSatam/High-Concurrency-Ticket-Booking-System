@@ -32,6 +32,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             String clientIp = getClientIP(request);
             long currentMinute = System.currentTimeMillis() / 60000;
 
+            // Evict stale IP counter records from previous minute windows to prevent memory leak
+            requestCounts.entrySet().removeIf(entry -> entry.getValue().minuteTimestamp < currentMinute);
+
             RequestCounter counter = requestCounts.compute(clientIp, (key, existing) -> {
                 if (existing == null || existing.minuteTimestamp != currentMinute) {
                     return new RequestCounter(currentMinute, new AtomicInteger(1));
