@@ -57,9 +57,16 @@ public class DistributedLockServiceImpl implements DistributedLockService {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Thread interrupted while waiting for seat locks", e);
         } finally {
-            if (acquired && combinedLock.isHeldByCurrentThread()) {
-                combinedLock.unlock();
-                log.info("Released distributed lock for seats: {}", sortedSeatIds);
+            if (acquired) {
+                try {
+                    boolean isHeld = (lockList.size() <= 1) ? combinedLock.isHeldByCurrentThread() : true;
+                    if (isHeld) {
+                        combinedLock.unlock();
+                        log.info("Released distributed lock for seats: {}", sortedSeatIds);
+                    }
+                } catch (Exception e) {
+                    log.warn("Error releasing distributed lock for seats {}: {}", sortedSeatIds, e.getMessage());
+                }
             }
         }
     }
