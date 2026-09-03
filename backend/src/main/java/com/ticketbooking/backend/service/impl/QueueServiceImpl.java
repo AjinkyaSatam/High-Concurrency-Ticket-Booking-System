@@ -27,16 +27,19 @@ public class QueueServiceImpl implements QueueService {
 
     private static final String QUEUE_KEY_PREFIX = "ticketbooking:queue:";
     private static final String TOKENS_KEY_PREFIX = "ticketbooking:queue_tokens:";
+    private static final String REVERSE_TOKENS_KEY_PREFIX = "ticketbooking:queue_token_to_user:";
     private static final String ADMITTED_KEY_PREFIX = "ticketbooking:queue_admitted:";
 
     @Override
     public QueueStatusResponse joinQueue(Long eventId, Long userId) {
         String queueKey = QUEUE_KEY_PREFIX + eventId;
         String tokensKey = TOKENS_KEY_PREFIX + eventId;
+        String reverseTokensKey = REVERSE_TOKENS_KEY_PREFIX + eventId;
         String admittedKey = ADMITTED_KEY_PREFIX + eventId;
 
         RScoredSortedSet<String> queue = redissonClient.getScoredSortedSet(queueKey);
         RMap<String, String> tokens = redissonClient.getMap(tokensKey);
+        RMap<String, String> tokenToUser = redissonClient.getMap(reverseTokensKey);
         RMap<Long, String> admitted = redissonClient.getMap(admittedKey);
 
         // Check if user is already admitted
@@ -67,12 +70,14 @@ public class QueueServiceImpl implements QueueService {
             if (token == null) {
                 token = "QT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
                 tokens.put(String.valueOf(userId), token);
+                tokenToUser.put(token, String.valueOf(userId));
             }
         } else {
             score = Instant.now().toEpochMilli();
             token = "QT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             queue.add(score, String.valueOf(userId));
             tokens.put(String.valueOf(userId), token);
+            tokenToUser.put(token, String.valueOf(userId));
         }
 
         Integer rank = queue.rank(String.valueOf(userId));
@@ -97,20 +102,24 @@ public class QueueServiceImpl implements QueueService {
     @Override
     public QueueStatusResponse getQueueStatus(Long eventId, String queueToken) {
         String queueKey = QUEUE_KEY_PREFIX + eventId;
-        String tokensKey = TOKENS_KEY_PREFIX + eventId;
+        String reverseTokensKey = REVERSE_TOKENS_KEY_PREFIX + eventId;
         String admittedKey = ADMITTED_KEY_PREFIX + eventId;
 
         RScoredSortedSet<String> queue = redissonClient.getScoredSortedSet(queueKey);
-        RMap<String, String> tokens = redissonClient.getMap(tokensKey);
+        RMap<String, String> tokenToUser = redissonClient.getMap(reverseTokensKey);
         RMap<Long, String> admitted = redissonClient.getMap(admittedKey);
 
-        // Find user by token
+        // Fast O(1) user lookup by token
         Long userId = null;
-        for (Map.Entry<String, String> entry : tokens.entrySet()) {
-            if (entry.getValue().equals(queueToken)) {
-                userId = Long.parseLong(entry.getKey());
-                break;
-            }
+        String userIdStr = tokenToUser.get(queueToken);
+        if (userIdStr != null) {
+            try {
+                userId = Long.parseLong(userIdStr);
+            } catch (NumberFormatException ignored) {}
+        } else if (queueToken != null && queueToken.startsWith("ADMITTED_")) {
+            try {
+                userId = Long.parseLong(queueToken.replace("ADMITTED_", ""));
+            } catch (NumberFormatException ignored) {}
         }
 
         if (userId == null) {
@@ -164,10 +173,12 @@ public class QueueServiceImpl implements QueueService {
     public int admitNextBatch(Long eventId, int batchSize) {
         String queueKey = QUEUE_KEY_PREFIX + eventId;
         String tokensKey = TOKENS_KEY_PREFIX + eventId;
+        String reverseTokensKey = REVERSE_TOKENS_KEY_PREFIX + eventId;
         String admittedKey = ADMITTED_KEY_PREFIX + eventId;
 
         RScoredSortedSet<String> queue = redissonClient.getScoredSortedSet(queueKey);
         RMap<String, String> tokens = redissonClient.getMap(tokensKey);
+        RMap<String, String> tokenToUser = redissonClient.getMap(reverseTokensKey);
         RMap<Long, String> admitted = redissonClient.getMap(admittedKey);
 
         int admittedCount = 0;
@@ -177,6 +188,11 @@ public class QueueServiceImpl implements QueueService {
                 Long userId = Long.parseLong(userIdStr);
                 String admissionCode = "PASS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
                 admitted.put(userId, admissionCode);
+
+                String token = tokens.get(userIdStr);
+                if (token != null) {
+                    tokenToUser.remove(token);
+                }
                 tokens.remove(userIdStr);
                 admittedCount++;
 
