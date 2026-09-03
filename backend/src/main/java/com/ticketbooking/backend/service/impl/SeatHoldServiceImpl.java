@@ -14,6 +14,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -37,10 +38,13 @@ public class SeatHoldServiceImpl implements SeatHoldService {
     private final DistributedLockService distributedLockService;
     private final SeatEventPublisher seatEventPublisher;
     private final RedissonClient redissonClient;
+    private final TransactionTemplate transactionTemplate;
 
     @Override
     public SeatHoldResponse createHold(String userEmail, SeatHoldRequest request) {
-        return distributedLockService.executeWithSeatLocks(request.getSeatIds(), 5, 10, () -> processHoldTransaction(userEmail, request));
+        return distributedLockService.executeWithSeatLocks(request.getSeatIds(), 5, 10, () ->
+                transactionTemplate.execute(status -> processHoldTransaction(userEmail, request))
+        );
     }
 
     @Transactional
