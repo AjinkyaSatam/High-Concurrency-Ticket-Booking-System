@@ -24,11 +24,13 @@ jobs:
       - name: Compile & Run JUnit 5 Test Suite
         run: |
           cd backend
+          chmod +x mvnw
           ./mvnw clean test
 
       - name: Build Application JAR Package
         run: |
           cd backend
+          chmod +x mvnw
           ./mvnw package -DskipTests
 
   frontend-build-test:
